@@ -1,4 +1,4 @@
-module github.com/onetwentyseven-dev/go-ssm-config/v2
+module github.com/onetwentyseven-dev/go-ssm-config
 
 go 1.11
 
