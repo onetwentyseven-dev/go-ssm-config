@@ -3,6 +3,7 @@
 package ssmconfig
 
 import (
+	"context"
 	"path"
 	"reflect"
 	"strconv"
@@ -15,17 +16,11 @@ import (
 // Process processes the config with a new default provider.
 //
 // See Provider.Process() for full documentation.
-func Process(awsConfig aws.Config, configPath string, c interface{}) error {
-	// sess, err := session.NewSession()
-	// if err != nil {
-	// 	err = errors.Wrap(err, "ssmconfig: could not create aws session")
-	// 	return err
-	// }
-
+func Process(ctx context.Context, awsConfig aws.Config, configPath string, c interface{}) error {
 	ssm := ssm.NewFromConfig(awsConfig)
 
 	p := Provider{ssm: ssm}
-	return p.Process(configPath, c)
+	return p.Process(ctx, configPath, c)
 }
 
 // Provider is a ssm configuration provider.
@@ -47,7 +42,7 @@ type Provider struct {
 //
 // The behavior of using the `default` and `required` tags on the same struct field is
 // currently undefined.
-func (p *Provider) Process(configPath string, c interface{}) error {
+func (p *Provider) Process(ctx context.Context, configPath string, c interface{}) error {
 
 	v := reflect.ValueOf(c)
 	if v.Kind() != reflect.Ptr || v.IsNil() {
@@ -95,20 +90,20 @@ func (p *Provider) Process(configPath string, c interface{}) error {
 
 func (p *Provider) getParameters(spec structSpec) (params map[string]string, invalidParams map[string]struct{}, err error) {
 	// find all of the params that need to be requested
-	var names []*string
+	var names []string
 	for i := range spec {
 		if spec[i].name == "" {
 			continue
 		}
-		names = append(names, &spec[i].name)
+		names = append(names, spec[i].name)
 	}
 
 	input := &ssm.GetParametersInput{
 		Names:          names,
-		WithDecryption: aws.Bool(true),
+		WithDecryption: true,
 	}
 
-	output, err := p.SSM.GetParameters(input)
+	output, err := p.ssm.GetParameters(ctx, input)
 	if err != nil {
 		return nil, nil, err
 	}
