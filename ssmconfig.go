@@ -56,7 +56,7 @@ func (p *Provider) Process(ctx context.Context, configPath string, c interface{}
 
 	spec := buildStructSpec(configPath, v.Type())
 
-	params, invalidPrams, err := p.getParameters(spec)
+	params, invalidPrams, err := p.getParameters(ctx, spec)
 	if err != nil {
 		return errors.Wrap(err, "ssmconfig: could not get parameters")
 	}
@@ -88,7 +88,7 @@ func (p *Provider) Process(ctx context.Context, configPath string, c interface{}
 	return nil
 }
 
-func (p *Provider) getParameters(spec structSpec) (params map[string]string, invalidParams map[string]struct{}, err error) {
+func (p *Provider) getParameters(ctx context.Context, spec structSpec) (params map[string]string, invalidParams map[string]struct{}, err error) {
 	// find all of the params that need to be requested
 	var names []string
 	for i := range spec {
