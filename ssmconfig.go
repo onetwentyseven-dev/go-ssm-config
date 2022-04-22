@@ -119,7 +119,7 @@ func (p *Provider) getParameters(spec structSpec) (params map[string]string, inv
 
 	invalidParams = map[string]struct{}{}
 	for i := range output.InvalidParameters {
-		invalidParams[*output.InvalidParameters[i]] = struct{}{}
+		invalidParams[output.InvalidParameters[i]] = struct{}{}
 	}
 	return params, invalidParams, nil
 }
