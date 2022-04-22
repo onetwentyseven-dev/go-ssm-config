@@ -7,30 +7,30 @@ import (
 	"reflect"
 	"strconv"
 
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
-	"github.com/aws/aws-sdk-go/service/ssm"
-	"github.com/aws/aws-sdk-go/service/ssm/ssmiface"
+	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/service/ssm"
 	"github.com/pkg/errors"
 )
 
 // Process processes the config with a new default provider.
 //
 // See Provider.Process() for full documentation.
-func Process(configPath string, c interface{}) error {
-	sess, err := session.NewSession()
-	if err != nil {
-		err = errors.Wrap(err, "ssmconfig: could not create aws session")
-		return err
-	}
+func Process(awsConfig aws.Config, configPath string, c interface{}) error {
+	// sess, err := session.NewSession()
+	// if err != nil {
+	// 	err = errors.Wrap(err, "ssmconfig: could not create aws session")
+	// 	return err
+	// }
 
-	p := Provider{SSM: ssm.New(sess)}
+	ssm := ssm.NewFromConfig(awsConfig)
+
+	p := Provider{ssm: ssm}
 	return p.Process(configPath, c)
 }
 
 // Provider is a ssm configuration provider.
 type Provider struct {
-	SSM ssmiface.SSMAPI
+	ssm *ssm.Client
 }
 
 // Process loads config values from smm (parameter store) into c. Encrypted parameters
